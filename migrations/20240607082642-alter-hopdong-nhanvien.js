@@ -1,13 +1,14 @@
 "use strict";
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addConstraint("HopDong", {
-      fields: ["MaLoaiHD"],
+      fields: ["MaThanhVienBGD"],
       type: "foreign key",
-      name: "fk_HopDong_MaLoaiHD",
+      name: "fk_HopDong_MaThanhVienBGD",
       references: {
-        table: "LoaiHD",
+        table: "NhanVien",
         field: "id",
       },
       onUpdate: "CASCADE",
@@ -16,6 +17,9 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeConstraint("HopDong", "fk_HopDong_MaLoaiHD");
+    await queryInterface.removeConstraint(
+      "HopDong",
+      "fk_HopDong_MaThanhVienBGD"
+    );
   },
 };
