@@ -75,8 +75,11 @@ NhanVien.hasMany(HopDong, { foreignKey: "MaNguoiNhap" });
 KhachHang.hasMany(HopDong, { foreignKey: "MaKhachHang" });
 LoaiHD.hasMany(HopDong, { foreignKey: "MaLoaiHD" });
 
-HopDong.belongsTo(NhanVien, { foreignKey: "MaNguoiNhap" });
-HopDong.belongsTo(NhanVien, { foreignKey: "MaThanhVienBGD" });
+HopDong.belongsTo(NhanVien, { foreignKey: "MaNguoiNhap", as: "NguoiNhap" });
+HopDong.belongsTo(NhanVien, {
+  foreignKey: "MaThanhVienBGD",
+  as: "ThanhVienBGD",
+});
 HopDong.belongsTo(KhachHang, { foreignKey: "MaKhachHang" });
 HopDong.belongsTo(LoaiHD, { foreignKey: "MaLoaiHD" });
 

@@ -1,6 +1,6 @@
 const { ResponseApi } = require("../services/api");
 const { STATUS_RESPONSE } = require("../services/constant");
-const { generalRoomRouters } = require("./generalRoom");
+const { generalRoomRouters } = require("./generalRoom/generalRoom.router");
 
 const routersInit = (app) => {
   app.use("/generalRoom", generalRoomRouters);

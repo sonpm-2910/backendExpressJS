@@ -1,0 +1,95 @@
+"use strict";
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.bulkInsert("PhuLuc", [
+      {
+        HopDongID: 1,
+        TrangThai: "HOAN_THANH",
+        SoPhuLuc: "MD!#$12312",
+        NgayGhiThucTe: "29/10/2022",
+        SoBan: 10,
+        TongGiaTri: 1000000,
+        LinkDrive: "",
+        MaNguoiNhap: 2,
+        MaLoaiPL: 1,
+        created_at: new Date(),
+        update_at: new Date(),
+      },
+      {
+        HopDongID: 1,
+        TrangThai: "CHUA_HOAN_THANH",
+        SoPhuLuc: "MD!#$12312",
+        NgayGhiThucTe: "29/10/2022",
+        SoBan: 10,
+        TongGiaTri: 1000000,
+        LinkDrive: "",
+        MaNguoiNhap: 2,
+        MaLoaiPL: 2,
+        created_at: new Date(),
+        update_at: new Date(),
+      },
+      {
+        HopDongID: 1,
+        TrangThai: "HOAN_THANH",
+        SoPhuLuc: "MD!#$12312",
+        NgayGhiThucTe: "29/10/2022",
+        SoBan: 10,
+        TongGiaTri: 1000000,
+        LinkDrive: "",
+        MaNguoiNhap: 2,
+        MaLoaiPL: 2,
+        created_at: new Date(),
+        update_at: new Date(),
+      },
+      {
+        HopDongID: 1,
+        TrangThai: "HOAN_THANH",
+        SoPhuLuc: "MD!#$12312",
+        NgayGhiThucTe: "29/10/2022",
+        SoBan: 10,
+        TongGiaTri: 1000000,
+        LinkDrive: "",
+        MaNguoiNhap: 2,
+        MaLoaiPL: 1,
+        created_at: new Date(),
+        update_at: new Date(),
+      },
+      {
+        HopDongID: 1,
+        TrangThai: "HOAN_THANH",
+        SoPhuLuc: "MD!#$12312",
+        NgayGhiThucTe: "29/10/2022",
+        SoBan: 10,
+        TongGiaTri: 1000000,
+        LinkDrive: "",
+        MaNguoiNhap: 2,
+        MaLoaiPL: 1,
+        created_at: new Date(),
+        update_at: new Date(),
+      },
+      {
+        HopDongID: 1,
+        TrangThai: "HOAN_THANH",
+        SoPhuLuc: "MD!#$12312",
+        NgayGhiThucTe: "29/10/2022",
+        SoBan: 10,
+        TongGiaTri: 1000000,
+        LinkDrive: "",
+        MaNguoiNhap: 2,
+        MaLoaiPL: 1,
+        created_at: new Date(),
+        update_at: new Date(),
+      },
+    ]);
+  },
+
+  async down(queryInterface, Sequelize) {
+    await queryInterface.bulkDelete("PhuLuc", null, {
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+    });
+  },
+};

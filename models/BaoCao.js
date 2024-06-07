@@ -1,5 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const NhanVien = require("./NhanVien");
+const HopDong = require("./HopDong");
+const LoaiBC = require("./LoaiBC");
 
 const BaoCao = sequelize.define(
   "BaoCao",
@@ -19,12 +22,12 @@ const BaoCao = sequelize.define(
       type: DataTypes.STRING,
     },
     NgayGhiThucTe: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
     },
     ThoiGianHieuLuc: {
       type: DataTypes.DATEONLY,
     },
-    LoaiBC: {
+    MaLoaiBC: {
       type: DataTypes.INTEGER,
     },
     MaKTV: {
@@ -63,5 +66,21 @@ const BaoCao = sequelize.define(
     timestamps: false,
   }
 );
+
+LoaiBC.hasMany(BaoCao, { foreignKey: "MaLoaiBC" });
+NhanVien.hasMany(BaoCao, { foreignKey: "MaKTV" });
+NhanVien.hasMany(BaoCao, { foreignKey: "MaTruongNhom" });
+NhanVien.hasMany(BaoCao, { foreignKey: "MaNguoiNhap" });
+NhanVien.hasMany(BaoCao, { foreignKey: "MaThanhVienBGD" });
+
+BaoCao.belongsTo(NhanVien, { foreignKey: "MaKTV", as: "KTV" });
+BaoCao.belongsTo(NhanVien, { foreignKey: "MaTruongNhom", as: "TruongNhom" });
+BaoCao.belongsTo(NhanVien, { foreignKey: "MaNguoiNhap", as: "NguoiNhap" });
+BaoCao.belongsTo(NhanVien, {
+  foreignKey: "MaThanhVienBGD",
+  as: "ThanhVienBGD",
+});
+BaoCao.belongsTo(LoaiBC, { foreignKey: "MaLoaiBC" });
+// BaoCao.belongsTo(HopDong, { foreignKey: "HopDongID" });
 
 module.exports = BaoCao;
