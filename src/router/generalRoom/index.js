@@ -12,7 +12,16 @@ generalRoomRouters.get("/list", async (req, res) => {
     const HopDongs = await HopDong.findAll({
       include: [NhanVien, KhachHang, LoaiHD],
     });
-    console.log("HopDongs", HopDongs);
+
+    const mapHopDongs = HopDongs.map((item) => {
+      return {
+        ...item.dataValues,
+        NhanVien: item.NhanVien.dataValues,
+        KhachHang: item.KhachHang.dataValues,
+        LoaiHD: item.LoaiHD.dataValues,
+      };
+    });
+    console.log("mapHopDongs", mapHopDongs);
     res.status(200).json({
       result: "oke nhe",
     });
