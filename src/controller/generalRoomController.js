@@ -12,6 +12,7 @@ const {
   paginationQuery,
   pagingResult,
 } = require("../services/constant");
+const NhiemVuHD = require("../../models/NhiemVuHD");
 
 let selfController;
 
@@ -32,6 +33,19 @@ class generalRoomController {
     });
 
     return BaoCaos;
+  }
+
+  async getSumNhiemVuHD(id, loaiBC) {
+    const query = {
+      [loaiBC]: id,
+    };
+    const sumBaoCao = await NhiemVuHD.count({
+      where: query,
+      raw: true,
+      nest: true,
+    });
+
+    return sumBaoCao;
   }
 
   async getList(req, res) {
@@ -68,15 +82,25 @@ class generalRoomController {
             itemPhuLuc.id,
             MA_LOAI_BAO_CAO.PHU_LUC
           );
+          const sumNhiemVuHDPhuLucs = await selfController.getSumNhiemVuHD(
+            itemHD.id,
+            MA_LOAI_BAO_CAO.PHU_LUC
+          );
           PhuLucs[index]["BaoCaos"] = BaoCaoPhuLucs;
+          PhuLucs[index]["TongBaoCaos"] = sumNhiemVuHDPhuLucs;
         }
 
         const BaoCaoHopDongs = await selfController.getBaoCaos(
           itemHD.id,
           MA_LOAI_BAO_CAO.HOP_DONG
         );
+        const sumNhiemVuHD = await selfController.getSumNhiemVuHD(
+          itemHD.id,
+          MA_LOAI_BAO_CAO.PHU_LUC
+        );
         HopDongs.rows[index]["PhuLucs"] = PhuLucs;
         HopDongs.rows[index]["BaoCaos"] = BaoCaoHopDongs;
+        HopDongs.rows[index]["TongBaoCaos"] = sumNhiemVuHD;
       }
 
       res.status(200).json({
