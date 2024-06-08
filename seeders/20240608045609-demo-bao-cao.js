@@ -6,6 +6,7 @@ module.exports = {
     await queryInterface.bulkInsert("BaoCao", [
       {
         HopDongID: 1,
+        PhuLucID: 1,
         TrangThai: "HOAN_THANH",
         SoBaoCao: "10",
         NgayGhiThucTe: "29/10/2023",
@@ -24,6 +25,7 @@ module.exports = {
       },
       {
         HopDongID: 1,
+        PhuLucID: 1,
         TrangThai: "HOAN_THANH",
         SoBaoCao: "10",
         NgayGhiThucTe: "29/10/2023",
@@ -42,6 +44,7 @@ module.exports = {
       },
       {
         HopDongID: 1,
+        PhuLucID: 1,
         TrangThai: "CHUA_HOAN_THANH",
         SoBaoCao: "10",
         NgayGhiThucTe: "29/10/2023",
@@ -60,6 +63,7 @@ module.exports = {
       },
       {
         HopDongID: 1,
+        PhuLucID: 1,
         TrangThai: "CHUA_HOAN_THANH",
         SoBaoCao: "10",
         NgayGhiThucTe: "29/10/2023",
@@ -78,6 +82,7 @@ module.exports = {
       },
       {
         HopDongID: 1,
+        PhuLucID: 1,
         TrangThai: "HOAN_THANH",
         SoBaoCao: "10",
         NgayGhiThucTe: "29/10/2023",
@@ -96,6 +101,7 @@ module.exports = {
       },
       {
         HopDongID: 1,
+        PhuLucID: 1,
         TrangThai: "CHUA_HOAN_THANH",
         SoBaoCao: "10",
         NgayGhiThucTe: "29/10/2023",

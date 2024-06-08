@@ -3,20 +3,20 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.removeConstraint("BaoCao", "fk_BaoCao_HopDongID");
-  },
-
-  async down(queryInterface, Sequelize) {
     await queryInterface.addConstraint("BaoCao", {
-      fields: ["HopDongID"],
+      fields: ["PhuLucID"],
       type: "foreign key",
-      name: "fk_BaoCao_HopDongID",
+      name: "fk_BaoCao_PhuLuc",
       references: {
-        table: "HopDong",
+        table: "PhuLuc",
         field: "id",
       },
       onUpdate: "CASCADE",
       onDelete: "SET NULL",
     });
+  },
+
+  async down(queryInterface, Sequelize) {
+    await queryInterface.removeConstraint("BaoCao", "fk_BaoCao_PhuLuc");
   },
 };

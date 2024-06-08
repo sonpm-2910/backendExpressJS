@@ -12,10 +12,11 @@ const {
   paginationQuery,
   pagingResult,
 } = require("../services/constant");
+const NhanVien = require("../../models/NhanVien");
 
 let selfController;
 
-class generalRoomController {
+class specializeRoomController {
   constructor() {
     selfController = this;
   }
@@ -41,6 +42,14 @@ class generalRoomController {
       const HopDongs = await HopDong.findAndCountAll({
         include: [
           {
+            model: NhanVien,
+            foreignKey: "MaNguoiNhap",
+            as: "NguoiNhap",
+            where: {
+              DonViID: 1,
+            },
+          },
+          {
             model: KhachHang,
             attributes: ["id", "name"],
           },
@@ -53,7 +62,7 @@ class generalRoomController {
 
       for (let index = 0; index < HopDongs.rows.length; index++) {
         const itemHD = HopDongs.rows[index];
-        const PhuLucs = await PhuLuc.findAndCountAll({
+        const PhuLucs = await PhuLuc.findAll({
           where: {
             HopDongID: itemHD.id,
           },
@@ -83,7 +92,6 @@ class generalRoomController {
         result: pagingResult(HopDongs, page, limit),
       });
     } catch (error) {
-      console.log("error", error);
       res.status(400).json({
         result: null,
       });
@@ -111,4 +119,4 @@ class generalRoomController {
   }
 }
 
-module.exports = new generalRoomController();
+module.exports = new specializeRoomController();

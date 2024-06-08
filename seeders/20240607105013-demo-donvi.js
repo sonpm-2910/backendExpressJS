@@ -14,7 +14,7 @@ module.exports = {
      */
     await queryInterface.bulkInsert("DonVi", [
       {
-        name: "Đơn vị 1",
+        name: "Phòng chuyên môn",
         created_at: new Date(),
         update_at: new Date(),
       },

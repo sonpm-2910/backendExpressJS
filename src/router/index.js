@@ -1,9 +1,13 @@
 const { ResponseApi } = require("../services/api");
 const { STATUS_RESPONSE } = require("../services/constant");
 const { generalRoomRouters } = require("./generalRoom/generalRoom.router");
+const {
+  specializeRoomRouters,
+} = require("./specializeRoom/specializeRoom.router");
 
 const routersInit = (app) => {
   app.use("/generalRoom", generalRoomRouters);
+  app.use("/specializeRoom", specializeRoomRouters);
 
   app.use((req, res, next) => {
     const err = new Error("Not Found");

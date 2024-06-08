@@ -3,6 +3,7 @@ const sequelize = require("../config/database");
 const NhanVien = require("./NhanVien");
 const HopDong = require("./HopDong");
 const LoaiBC = require("./LoaiBC");
+const PhuLuc = require("./PhuLuc");
 
 const BaoCao = sequelize.define(
   "BaoCao",
@@ -13,6 +14,9 @@ const BaoCao = sequelize.define(
       primaryKey: true,
     },
     HopDongID: {
+      type: DataTypes.INTEGER,
+    },
+    PhuLucID: {
       type: DataTypes.INTEGER,
     },
     TrangThai: {
@@ -67,6 +71,8 @@ const BaoCao = sequelize.define(
   }
 );
 
+PhuLuc.hasMany(BaoCao, { foreignKey: "PhuLucID" });
+HopDong.hasMany(BaoCao, { foreignKey: "HopDongID" });
 LoaiBC.hasMany(BaoCao, { foreignKey: "MaLoaiBC" });
 NhanVien.hasMany(BaoCao, { foreignKey: "MaKTV" });
 NhanVien.hasMany(BaoCao, { foreignKey: "MaTruongNhom" });
@@ -81,6 +87,7 @@ BaoCao.belongsTo(NhanVien, {
   as: "ThanhVienBGD",
 });
 BaoCao.belongsTo(LoaiBC, { foreignKey: "MaLoaiBC" });
-// BaoCao.belongsTo(HopDong, { foreignKey: "HopDongID" });
+BaoCao.belongsTo(HopDong, { foreignKey: "HopDongID" });
+BaoCao.belongsTo(PhuLuc, { foreignKey: "PhuLucID" });
 
 module.exports = BaoCao;

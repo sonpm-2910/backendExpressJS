@@ -25,7 +25,7 @@ module.exports = {
         SoLuu: "10",
         SoBan: 2,
         Noidung: "Nội dung",
-        MaNguoiNhap: 2,
+        MaNguoiNhap: 1,
         MaThanhVienBGD: 1,
         MaKhachHang: 2,
         LinkDrive: "",
