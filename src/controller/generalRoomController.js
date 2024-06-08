@@ -76,18 +76,19 @@ class generalRoomController {
           nest: true,
         });
 
-        for (let index = 0; index < PhuLucs.length; index++) {
-          const itemPhuLuc = PhuLucs[index];
+        for (let index = 0; index < PhuLucs.rows.length; index++) {
+          const itemPhuLuc = PhuLucs.rows[index];
           const BaoCaoPhuLucs = await selfController.getBaoCaos(
             itemPhuLuc.id,
             MA_LOAI_BAO_CAO.PHU_LUC
           );
           const sumNhiemVuHDPhuLucs = await selfController.getSumNhiemVuHD(
-            itemHD.id,
+            itemPhuLuc.id,
             MA_LOAI_BAO_CAO.PHU_LUC
           );
-          PhuLucs[index]["BaoCaos"] = BaoCaoPhuLucs;
-          PhuLucs[index]["TongBaoCaos"] = sumNhiemVuHDPhuLucs;
+          console.log('Sum BC PL: ' + sumNhiemVuHDPhuLucs);
+          PhuLucs.rows[index]["BaoCaos"] = BaoCaoPhuLucs;
+          PhuLucs.rows[index]["TongBaoCaos"] = sumNhiemVuHDPhuLucs;
         }
 
         const BaoCaoHopDongs = await selfController.getBaoCaos(
@@ -96,7 +97,7 @@ class generalRoomController {
         );
         const sumNhiemVuHD = await selfController.getSumNhiemVuHD(
           itemHD.id,
-          MA_LOAI_BAO_CAO.PHU_LUC
+          MA_LOAI_BAO_CAO.HOP_DONG
         );
         HopDongs.rows[index]["PhuLucs"] = PhuLucs;
         HopDongs.rows[index]["BaoCaos"] = BaoCaoHopDongs;
