@@ -11,6 +11,8 @@ const {
   paginateDefault,
   paginationQuery,
   pagingResult,
+  STATUS_RESPONSE,
+  apiResponseCommon,
 } = require("../services/constant");
 const NhiemVuHD = require("../../models/NhiemVuHD");
 
@@ -86,7 +88,7 @@ class generalRoomController {
             itemPhuLuc.id,
             MA_LOAI_BAO_CAO.PHU_LUC
           );
-          console.log('Sum BC PL: ' + sumNhiemVuHDPhuLucs);
+          console.log("Sum BC PL: " + sumNhiemVuHDPhuLucs);
           PhuLucs.rows[index]["BaoCaos"] = BaoCaoPhuLucs;
           PhuLucs.rows[index]["TongBaoCaos"] = sumNhiemVuHDPhuLucs;
         }
@@ -104,14 +106,13 @@ class generalRoomController {
         HopDongs.rows[index]["TongBaoCaos"] = sumNhiemVuHD;
       }
 
-      res.status(200).json({
-        result: pagingResult(HopDongs, page, limit),
-      });
+      res
+        .status(STATUS_RESPONSE.OK)
+        .json(apiResponseCommon(pagingResult(HopDongs, page, limit)));
     } catch (error) {
-      console.log("error", error);
-      res.status(400).json({
-        result: null,
-      });
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
     }
   }
 
@@ -125,13 +126,11 @@ class generalRoomController {
         raw: true,
         nest: true,
       });
-      res.status(200).json({
-        result,
-      });
+      res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(result));
     } catch (error) {
-      res.status(400).json({
-        result: null,
-      });
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
     }
   }
 }
