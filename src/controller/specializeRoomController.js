@@ -11,6 +11,7 @@ const {
   paginateDefault,
   paginationQuery,
   pagingResult,
+  apiResponseCommon,
 } = require("../services/constant");
 const NhanVien = require("../../models/NhanVien");
 const NhiemVuHD = require("../../models/NhiemVuHD");
@@ -112,13 +113,13 @@ class specializeRoomController {
         HopDongs.rows[index]["TongBaoCaos"] = sumNhiemVuHD;
       }
 
-      res.status(200).json({
-        result: pagingResult(HopDongs, page, limit),
-      });
+      res
+        .status(STATUS_RESPONSE.OK)
+        .json(apiResponseCommon(pagingResult(HopDongs, page, limit)));
     } catch (error) {
-      res.status(400).json({
-        result: null,
-      });
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
     }
   }
 
@@ -132,13 +133,11 @@ class specializeRoomController {
         raw: true,
         nest: true,
       });
-      res.status(200).json({
-        result,
-      });
+      res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(result));
     } catch (error) {
-      res.status(400).json({
-        result: null,
-      });
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
     }
   }
 }
