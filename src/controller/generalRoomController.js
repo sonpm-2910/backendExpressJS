@@ -88,7 +88,6 @@ class generalRoomController {
             itemPhuLuc.id,
             MA_LOAI_BAO_CAO.PHU_LUC
           );
-          console.log("Sum BC PL: " + sumNhiemVuHDPhuLucs);
           PhuLucs.rows[index]["BaoCaos"] = BaoCaoPhuLucs;
           PhuLucs.rows[index]["TongBaoCaos"] = sumNhiemVuHDPhuLucs;
         }

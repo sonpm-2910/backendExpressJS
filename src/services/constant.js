@@ -2,6 +2,8 @@ const STATUS_RESPONSE = {
   BAD_REQUEST: 400,
   NOT_FOUND: 404,
   UNAUTHORIZED: 401,
+  TOKEN_EXPIRED: 403,
+  PERMISSION_DENIED: 405,
   OK: 200,
 };
 
@@ -38,10 +40,22 @@ const messagesErrorCommon = (field) => {
     mustBeString: `${field} phải là 1 chuỗi`,
     notEmpty: `${field} không được bỏ trống`,
     mustBeNumber: `${field} phải là số`,
+    inValid: `${field} không đúng định dạng`,
   };
 };
 
 const saltOrRounds = 10;
+
+const handleNumberWithMaxLength = (num, length = 3) => {
+  return Number(num).toString().padStart(length, "0");
+};
+
+const STATUS_DOCUMENT = {
+  approve: "approve",
+  processing: "processing",
+  comment: "comment",
+  complete: "complete",
+};
 
 module.exports = {
   STATUS_RESPONSE,
@@ -50,5 +64,7 @@ module.exports = {
   paginationQuery,
   apiResponseCommon,
   messagesErrorCommon,
+  handleNumberWithMaxLength,
   saltOrRounds,
+  STATUS_DOCUMENT,
 };

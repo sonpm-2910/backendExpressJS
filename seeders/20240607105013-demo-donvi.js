@@ -23,6 +23,11 @@ module.exports = {
         created_at: new Date(),
         update_at: new Date(),
       },
+      {
+        name: "BGD",
+        created_at: new Date(),
+        update_at: new Date(),
+      },
     ]);
   },
 
