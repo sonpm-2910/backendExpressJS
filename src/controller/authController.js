@@ -69,9 +69,15 @@ class AuthController {
       }
 
       const { password, ...dataUser } = resultLogin.result;
-      const access_token = generateAccessToken({ username: dataUser.username });
-      const refresh_token = generateRefreshToken({
+      const access_token = generateAccessToken({
+        id: dataUser.id,
         username: dataUser.username,
+        role_id: dataUser.role_id,
+      });
+      const refresh_token = generateRefreshToken({
+        id: dataUser.id,
+        username: dataUser.username,
+        role_id: dataUser.role_id,
       });
 
       await User.update(

@@ -40,8 +40,8 @@ const NhiemVuHD = sequelize.define(
   }
 );
 
-PhuLuc.hasMany(NhiemVuHD, { foreignKey: "PhuLucID" });
-HopDong.hasMany(NhiemVuHD, { foreignKey: "HopDongID" });
+PhuLuc.hasMany(NhiemVuHD, { foreignKey: "PhuLucID", allowNull: true });
+HopDong.hasMany(NhiemVuHD, { foreignKey: "HopDongID", allowNull: true });
 LoaiBC.hasMany(NhiemVuHD, { foreignKey: "MaLoaiBC" });
 
 NhiemVuHD.belongsTo(LoaiBC, { foreignKey: "MaLoaiBC" });
