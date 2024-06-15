@@ -12,9 +12,11 @@ const {
   paginationQuery,
   pagingResult,
   apiResponseCommon,
+  STATUS_RESPONSE,
 } = require("../services/constant");
 const NhanVien = require("../../models/NhanVien");
 const NhiemVuHD = require("../../models/NhiemVuHD");
+const DonVi = require("../../models/DonVi");
 
 let selfController;
 
@@ -129,7 +131,27 @@ class specializeRoomController {
         where: {
           id: req.query.id,
         },
-        include: [LoaiHD],
+        include: [
+          LoaiHD,
+          {
+            model: KhachHang,
+          },
+          {
+            model: NhanVien,
+            foreignKey: "MaNguoiNhap",
+            as: "NguoiNhap",
+            include: [
+              {
+                model: DonVi,
+              },
+            ],
+          },
+          {
+            model: NhanVien,
+            foreignKey: "MaThanhVienBGD",
+            as: "ThanhVienBGD",
+          },
+        ],
         raw: true,
         nest: true,
       });

@@ -15,6 +15,8 @@ const {
   apiResponseCommon,
 } = require("../services/constant");
 const NhiemVuHD = require("../../models/NhiemVuHD");
+const NhanVien = require("../../models/NhanVien");
+const DonVi = require("../../models/DonVi");
 
 let selfController;
 
@@ -121,7 +123,27 @@ class generalRoomController {
         where: {
           id: req.query.id,
         },
-        include: [LoaiHD],
+        include: [
+          LoaiHD,
+          {
+            model: KhachHang,
+          },
+          {
+            model: NhanVien,
+            foreignKey: "MaNguoiNhap",
+            as: "NguoiNhap",
+            include: [
+              {
+                model: DonVi,
+              },
+            ],
+          },
+          {
+            model: NhanVien,
+            foreignKey: "MaThanhVienBGD",
+            as: "ThanhVienBGD",
+          },
+        ],
         raw: true,
         nest: true,
       });
