@@ -71,8 +71,8 @@ const BaoCao = sequelize.define(
   }
 );
 
-PhuLuc.hasMany(BaoCao, { foreignKey: "PhuLucID" });
-HopDong.hasMany(BaoCao, { foreignKey: "HopDongID" });
+PhuLuc.hasMany(BaoCao, { foreignKey: "PhuLucID", allowNull: true });
+HopDong.hasMany(BaoCao, { foreignKey: "HopDongID", allowNull: true });
 LoaiBC.hasMany(BaoCao, { foreignKey: "MaLoaiBC" });
 NhanVien.hasMany(BaoCao, { foreignKey: "MaKTV" });
 NhanVien.hasMany(BaoCao, { foreignKey: "MaTruongNhom" });

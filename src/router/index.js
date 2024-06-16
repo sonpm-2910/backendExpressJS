@@ -3,12 +3,14 @@ const { STATUS_RESPONSE } = require("../services/constant");
 const { authRouters } = require("./auth/auth.router");
 const { contractRouters } = require("./contract/contract.router");
 const { generalRoomRouters } = require("./generalRoom/generalRoom.router");
+const { reportRouters } = require("./report/report.router");
 const {
   specializeRoomRouters,
 } = require("./specializeRoom/specializeRoom.router");
 
 const routersInit = (app) => {
   app.use("/contract", contractRouters);
+  app.use("/report", reportRouters);
   app.use("/generalRoom", generalRoomRouters);
   app.use("/specializeRoom", specializeRoomRouters);
   app.use("/auth", authRouters);

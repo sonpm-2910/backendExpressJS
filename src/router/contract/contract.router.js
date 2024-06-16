@@ -15,5 +15,19 @@ contractRouters.post(
   validateCreateContract(),
   contractController.createContract
 );
+contractRouters.get(
+  "/list-type-contract",
+  (req, res, next) => {
+    return authMiddleware(req, res, next, [roles.isAdmin, roles.isPhongCM]);
+  },
+  contractController.getListLoaiHD
+);
+contractRouters.get(
+  "/list-thanh-vien-bgd",
+  (req, res, next) => {
+    return authMiddleware(req, res, next, [roles.isAdmin, roles.isPhongCM]);
+  },
+  contractController.getListThanhVienBGD
+);
 
 module.exports = { contractRouters };
