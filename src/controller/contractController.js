@@ -24,21 +24,48 @@ class ContractController {
     return SoHopDong.split(".")[1].split("/")[0];
   }
 
-  async getListThanhVienBGD() {
-    return await NhanVien.findAll({
-      where: {
-        DonViID: 3, //3 là thành viên BGD
-      },
-      raw: true,
-      nest: true,
-    });
+  async getListThanhVienBGD(req, res) {
+    try {
+      const result = await NhanVien.findAll({
+        where: {
+          DonViID: 3, //3 là thành viên BGD
+        },
+        include: [
+          {
+            model: DonVi,
+          },
+        ],
+        raw: true,
+        nest: true,
+      });
+
+      if (req && res) {
+        return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(result));
+      }
+      return result;
+    } catch (error) {
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
+    }
   }
 
-  async getListLoaiHD() {
-    return await LoaiHD.findAll({
-      raw: true,
-      nest: true,
-    });
+  async getListLoaiHD(req, res) {
+    try {
+      const result = await LoaiHD.findAll({
+        raw: true,
+        nest: true,
+      });
+
+      if (req && res) {
+        return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(result));
+      }
+      return result;
+    } catch (error) {
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
+    }
   }
 
   async createContract(req, res) {
