@@ -10,9 +10,9 @@ const {
 
 const routersInit = (app) => {
   app.use("/contract", contractRouters);
+  app.use("/report", reportRouters);
   app.use("/generalRoom", generalRoomRouters);
   app.use("/specializeRoom", specializeRoomRouters);
-  app.use("/report", reportRouters);
   app.use("/auth", authRouters);
 
   app.use((req, res, next) => {

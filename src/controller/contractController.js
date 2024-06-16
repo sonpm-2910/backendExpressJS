@@ -44,7 +44,7 @@ class ContractController {
       }
       return result;
     } catch (error) {
-      res
+      return res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));
     }
@@ -62,7 +62,7 @@ class ContractController {
       }
       return result;
     } catch (error) {
-      res
+      return res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));
     }
