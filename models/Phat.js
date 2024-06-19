@@ -1,30 +1,37 @@
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
+const NhanVien = require("./NhanVien");
 
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-
-  const Phat = sequelize.define('Phat', {
+const Phat = sequelize.define(
+  "Phat",
+  {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
     NhanVienID: {
-      type: DataTypes.INTEGER
+      type: DataTypes.INTEGER,
     },
     BatDau: {
-      type: DataTypes.TIME
+      type: DataTypes.DATE,
     },
     KetThuc: {
-      type: DataTypes.TIME
+      type: DataTypes.DATE,
     },
     created_at: {
-      type: DataTypes.DATE
+      type: DataTypes.DATE,
     },
     update_at: {
-      type: DataTypes.DATE
-    }
-  }, {
-    tableName: 'Phat',
-    timestamps: false
-  });
+      type: DataTypes.DATE,
+    },
+  },
+  {
+    tableName: "Phat",
+    timestamps: false,
+  }
+);
+
+NhanVien.hasMany(Phat, { foreignKey: "NhanVienID" });
+Phat.belongsTo(NhanVien, { foreignKey: "NhanVienID" });
 module.exports = Phat;

@@ -38,6 +38,10 @@ const validateCreateReport = () => {
     check("MaThanhVienBGD", messagesErrorCommon("Mã thành viên").notEmpty)
       .not()
       .isEmpty(),
+    check(
+      "DanhSachKTV",
+      messagesErrorCommon("Danh sách KTV").mustBeArray
+    ).isArray(),
   ];
 };
 

@@ -38,6 +38,7 @@ const apiResponseCommon = (result, message) => {
 const messagesErrorCommon = (field) => {
   return {
     mustBeString: `${field} phải là 1 chuỗi`,
+    mustBeArray: `${field} phải là array`,
     notEmpty: `${field} không được bỏ trống`,
     mustBeNumber: `${field} phải là số`,
     inValid: `${field} không đúng định dạng`,
