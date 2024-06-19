@@ -27,7 +27,6 @@ const getIncreasingConsecutive = (array, times) => {
       arrayCheck.push(array[j]);
       j++;
     }
-    console.log("arrayCheck", arrayCheck);
 
     const isIncreasingConsecutive = hasIncreasingSequence(arrayCheck);
     if (isIncreasingConsecutive) {

@@ -68,6 +68,74 @@ class ContractController {
     }
   }
 
+  async generateSoHD(MaNguoiNhap, NgayGhiThucTe, MaLoaiHD) {
+    const listOldContract = await HopDong.findAll({
+      include: [
+        {
+          model: NhanVien,
+          foreignKey: "MaNguoiNhap",
+          as: "NguoiNhap",
+          include: [
+            {
+              model: DonVi,
+            },
+          ],
+        },
+        {
+          model: LoaiHD,
+        },
+      ],
+      where: {
+        NgayGhiThucTe,
+        MaNguoiNhap,
+        MaLoaiHD,
+      },
+      order: [["update_at", "DESC"]],
+      limit: 1,
+      raw: true,
+      nest: true,
+    });
+
+    let stt = 1,
+      nameLoaiHD = "",
+      nameRoom = "";
+
+    if (listOldContract.length > 0) {
+      stt =
+        Number(selfController.getSTTInSHD(listOldContract[0].SoHopDong)) + 1;
+      nameLoaiHD = listOldContract[0].LoaiHD.name;
+      nameRoom = listOldContract[0].NguoiNhap.DonVi.name;
+    } else {
+      nameLoaiHD = (
+        await LoaiHD.findOne({
+          where: {
+            id: MaLoaiHD,
+          },
+          raw: true,
+          nest: true,
+        })
+      ).name;
+      nameRoom = (
+        await NhanVien.findOne({
+          include: [
+            {
+              model: DonVi,
+            },
+          ],
+          where: {
+            id: user.id,
+          },
+          raw: true,
+          nest: true,
+        })
+      ).DonVi.name;
+    }
+
+    const formatSTT = handleNumberWithMaxLength(stt);
+
+    return `${NgayGhiThucTe}.${formatSTT}/${nameLoaiHD}.${nameRoom}`;
+  }
+
   async createContract(req, res) {
     try {
       const errors = validationResult(req);
@@ -78,72 +146,11 @@ class ContractController {
       }
       const body = req.body;
       const user = jwt.decode(req.headers.authorization.split(" ")[1]);
-
-      const listOldContract = await HopDong.findAll({
-        include: [
-          {
-            model: NhanVien,
-            foreignKey: "MaNguoiNhap",
-            as: "NguoiNhap",
-            include: [
-              {
-                model: DonVi,
-              },
-            ],
-          },
-          {
-            model: LoaiHD,
-          },
-        ],
-        where: {
-          NgayGhiThucTe: body.NgayGhiThucTe,
-          MaNguoiNhap: user.id,
-          MaLoaiHD: body.MaLoaiHD,
-        },
-        order: [["update_at", "DESC"]],
-        limit: 1,
-        raw: true,
-        nest: true,
-      });
-
-      let stt = 1,
-        nameLoaiHD = "",
-        nameRoom = "";
-
-      if (listOldContract.length > 0) {
-        stt =
-          Number(selfController.getSTTInSHD(listOldContract[0].SoHopDong)) + 1;
-        nameLoaiHD = listOldContract[0].LoaiHD.name;
-        nameRoom = listOldContract[0].NguoiNhap.DonVi.name;
-      } else {
-        nameLoaiHD = (
-          await LoaiHD.findOne({
-            where: {
-              id: body.MaLoaiHD,
-            },
-            raw: true,
-            nest: true,
-          })
-        ).name;
-        nameRoom = (
-          await NhanVien.findOne({
-            include: [
-              {
-                model: DonVi,
-              },
-            ],
-            where: {
-              id: user.id,
-            },
-            raw: true,
-            nest: true,
-          })
-        ).DonVi.name;
-      }
-
-      const formatSTT = handleNumberWithMaxLength(stt);
-
-      const SoHopDong = `${body.NgayGhiThucTe}.${formatSTT}/${nameLoaiHD}.${nameRoom}`;
+      const SoHopDong = await selfController.generateSoHD(
+        user.id,
+        body.NgayGhiThucTe,
+        body.MaLoaiHD
+      );
 
       const newHD = await HopDong.create({
         TrangThai: body.TrangThai,
@@ -186,7 +193,49 @@ class ContractController {
         .status(STATUS_RESPONSE.OK)
         .json(apiResponseCommon({ listThanhVienBGD, listLoaiHD }));
     } catch (error) {
-      console.log("error", error);
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
+    }
+  }
+
+  async updateContract(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(STATUS_RESPONSE.BAD_REQUEST)
+          .json(apiResponseCommon(null, errors.array()[0].msg));
+      }
+      const { id, ...dataUpdate } = req.body;
+      await HopDong.update(
+        {
+          ...dataUpdate,
+          update_at: new Date(),
+        },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+      const dataHD = await HopDong.findOne({
+        where: {
+          id,
+        },
+      });
+
+      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiHD } = dataHD.dataValues;
+      const SoHopDong = await selfController.generateSoHD(
+        MaNguoiNhap,
+        NgayGhiThucTe,
+        MaLoaiHD
+      );
+      dataHD.SoHopDong = SoHopDong;
+      await dataHD.save();
+
+      return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(dataHD));
+    } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));

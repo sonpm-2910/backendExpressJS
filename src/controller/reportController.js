@@ -248,8 +248,6 @@ class ReportController {
         });
       }
 
-      console.log("loaiBaoCaoData", loaiBaoCaoData);
-
       const [resultKTV, listLoaiBC, listThanhVienBGD] = await Promise.all([
         selfController.getListKTV(
           loaiBaoCaoData.KTKy || false,
@@ -267,7 +265,6 @@ class ReportController {
         })
       );
     } catch (error) {
-      console.log("error", error);
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));
