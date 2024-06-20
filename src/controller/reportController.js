@@ -3,6 +3,7 @@ const {
   STATUS_RESPONSE,
   apiResponseCommon,
   handleNumberWithMaxLength,
+  STATUS_DOCUMENT,
 } = require("../services/constant");
 const jwt = require("jsonwebtoken");
 const BaoCao = require("../../models/BaoCao");
@@ -23,11 +24,48 @@ class ReportController {
     selfController = this;
   }
 
+  groupArrObjectAndSort(array) {
+    console.log("array", array);
+    const tempObj = array.reduce((acc, curr) => {
+      if (curr.MaKTV in acc) {
+        acc[curr.MaKTV].NamKy.push(curr.NamKy);
+      } else {
+        acc[curr.MaKTV] = {
+          NhanVien: curr.NhanVien,
+          NamKy: [curr.NamKy],
+        };
+      }
+      return acc;
+    }, {});
+
+    let reorganized = Object.keys(tempObj).map((key) => ({
+      MaKTV: key,
+      NhanVien: tempObj[key].NhanVien,
+      NamKy: tempObj[key].NamKy,
+    }));
+
+    reorganized = reorganized.map((item) => {
+      let NamKy = item.NamKy.sort((a, b) => a - b);
+      return {
+        ...item,
+        NamKy,
+      };
+    });
+
+    return reorganized;
+  }
+
   getSTTInSBC(SoBaoCao) {
     return SoBaoCao.split(".")[1].split("/")[0];
   }
 
-  async getListKTV(isCheckIncreasingSequence, IncreasingTimes = 3) {
+  async getListKTV(
+    isCheckIncreasingSequence,
+    IncreasingTimes = 3,
+    HopDongID,
+    PhuLucID,
+    MaLoaiBC
+  ) {
     let ListKTV = [],
       ListKTVPhat = [],
       ListKTVKyLienTiep = [];
@@ -71,25 +109,38 @@ class ReportController {
     ListKTVKyLienTiep = [];
 
     if (isCheckIncreasingSequence) {
-      for (let index = 0; index < result.length; index++) {
-        const NhanVienKTV = result[index];
-        const listKTV_BaoCao = await KTV_BaoCao.findAll({
-          where: {
-            MaKTV: NhanVienKTV.id,
+      let listBaoCao = await BaoCao.findAll({
+        where: {
+          HopDongID,
+          PhuLucID,
+          MaLoaiBC,
+          TrangThai: STATUS_DOCUMENT.complete,
+        },
+        raw: true,
+        nest: true,
+      });
+      listBaoCao = listBaoCao.map((item) => item.id);
+      const listKTV_BaoCao = await KTV_BaoCao.findAll({
+        where: {
+          BaoCaoID: listBaoCao,
+        },
+        include: [
+          {
+            model: NhanVien,
+            include: [DonVi],
           },
-          attributes: ["NamKy"],
-          raw: true,
-          nest: true,
-        });
-
-        const convertArrayNumber = listKTV_BaoCao
-          .map((item) => item.NamKy)
-          .sort((a, b) => a - b);
+        ],
+        raw: true,
+        nest: true,
+      });
+      const groups = selfController.groupArrObjectAndSort(listKTV_BaoCao);
+      for (let index = 0; index < groups.length; index++) {
+        const NhanVienKTV = groups[index].NhanVien;
+        const arrayYears = groups[index].NamKy;
         const dataCheckIncreasingConsecutive = getIncreasingConsecutive(
-          convertArrayNumber,
+          arrayYears,
           IncreasingTimes
         );
-
         if (dataCheckIncreasingConsecutive.isConsecutive) {
           ListKTVKyLienTiep.push({
             ...NhanVienKTV,
@@ -251,7 +302,10 @@ class ReportController {
       const [resultKTV, listLoaiBC, listThanhVienBGD] = await Promise.all([
         selfController.getListKTV(
           loaiBaoCaoData.KTKy || false,
-          loaiBaoCaoData.ThoiGian || 3
+          loaiBaoCaoData.ThoiGian || 3,
+          body?.HopDongID || null,
+          body?.PhuLucID || null,
+          body.MaLoaiBC
         ),
         selfController.getListLoaiBC(),
         contractController.getListThanhVienBGD(),
