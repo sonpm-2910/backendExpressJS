@@ -58,6 +58,6 @@ NhanVien.hasMany(PhuLuc, { foreignKey: "MaNguoiNhap" });
 
 PhuLuc.belongsTo(HopDong, { foreignKey: "HopDongID" });
 PhuLuc.belongsTo(LoaiPL, { foreignKey: "MaLoaiPL" });
-PhuLuc.belongsTo(NhanVien, { foreignKey: "MaNguoiNhap" });
+PhuLuc.belongsTo(NhanVien, { foreignKey: "MaNguoiNhap", as: "NguoiNhap" });
 
 module.exports = PhuLuc;

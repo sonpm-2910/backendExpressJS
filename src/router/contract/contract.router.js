@@ -27,14 +27,14 @@ contractRouters.post(
   contractController.createContract
 );
 contractRouters.get(
-  "/list-type-contract",
+  "/listTypeContract",
   (req, res, next) => {
     return authMiddleware(req, res, next, [roles.isAdmin, roles.isPhongCM]);
   },
   contractController.getListLoaiHD
 );
 contractRouters.get(
-  "/list-thanh-vien-bgd",
+  "/listThanhVienBGD",
   (req, res, next) => {
     return authMiddleware(req, res, next, [roles.isAdmin, roles.isPhongCM]);
   },
