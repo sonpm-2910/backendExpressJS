@@ -1,40 +1,32 @@
 const { validationResult } = require("express-validator");
 const {
-  apiResponseCommon,
   STATUS_RESPONSE,
+  apiResponseCommon,
   handleNumberWithMaxLength,
   STATUS_DOCUMENT,
 } = require("../services/constant");
-const jwt = require("jsonwebtoken");
-const HopDong = require("../../models/HopDong");
+const LoaiPL = require("../../models/LoaiPL");
 const NhanVien = require("../../models/NhanVien");
+const PhuLuc = require("../../models/PhuLuc");
 const DonVi = require("../../models/DonVi");
-const LoaiHD = require("../../models/LoaiHD");
+const jwt = require("jsonwebtoken");
 const NhiemVuHD = require("../../models/NhiemVuHD");
+const contractController = require("./contractController");
 const moment = require("moment");
-
 let selfController;
 
-class ContractController {
+class AppendixContractController {
   constructor() {
     selfController = this;
   }
 
-  getSTTInSHD(SoHopDong) {
-    return SoHopDong.split(".")[1].split("/")[0];
+  getSTTInSPL(SoPhuLuc) {
+    return SoPhuLuc.split(".")[1].split("/")[0];
   }
 
-  async getListThanhVienBGD(req, res) {
+  async getListLoaiPL(req, res) {
     try {
-      const result = await NhanVien.findAll({
-        where: {
-          DonViID: 3, //3 là thành viên BGD
-        },
-        include: [
-          {
-            model: DonVi,
-          },
-        ],
+      const result = await LoaiPL.findAll({
         raw: true,
         nest: true,
       });
@@ -50,26 +42,8 @@ class ContractController {
     }
   }
 
-  async getListLoaiHD(req, res) {
-    try {
-      const result = await LoaiHD.findAll({
-        raw: true,
-        nest: true,
-      });
-
-      if (req && res) {
-        return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(result));
-      }
-      return result;
-    } catch (error) {
-      return res
-        .status(STATUS_RESPONSE.BAD_REQUEST)
-        .json(apiResponseCommon(null, JSON.stringify(error)));
-    }
-  }
-
-  async generateSoHD(MaNguoiNhap, NgayGhiThucTe, MaLoaiHD) {
-    const listOldContract = await HopDong.findAll({
+  async generateSoPL(MaNguoiNhap, NgayGhiThucTe, MaLoaiPL) {
+    const listOldAppendixContract = await PhuLuc.findAll({
       include: [
         {
           model: NhanVien,
@@ -82,13 +56,13 @@ class ContractController {
           ],
         },
         {
-          model: LoaiHD,
+          model: LoaiPL,
         },
       ],
       where: {
         NgayGhiThucTe,
         MaNguoiNhap,
-        MaLoaiHD,
+        MaLoaiPL,
       },
       order: [["update_at", "DESC"]],
       limit: 1,
@@ -97,19 +71,21 @@ class ContractController {
     });
 
     let stt = 1,
-      nameLoaiHD = "",
+      nameLoaiPL = "",
       nameRoom = "";
 
-    if (listOldContract.length > 0) {
+    if (listOldAppendixContract.length > 0) {
       stt =
-        Number(selfController.getSTTInSHD(listOldContract[0].SoHopDong)) + 1;
-      nameLoaiHD = listOldContract[0].LoaiHD.name;
-      nameRoom = listOldContract[0].NguoiNhap.DonVi.name;
+        Number(
+          selfController.getSTTInSPL(listOldAppendixContract[0].SoPhuLuc)
+        ) + 1;
+      nameLoaiPL = listOldAppendixContract[0].LoaiPL.name;
+      nameRoom = listOldAppendixContract[0].NguoiNhap.DonVi.name;
     } else {
-      nameLoaiHD = (
-        await LoaiHD.findOne({
+      nameLoaiPL = (
+        await LoaiPL.findOne({
           where: {
-            id: MaLoaiHD,
+            id: MaLoaiPL,
           },
           raw: true,
           nest: true,
@@ -133,10 +109,10 @@ class ContractController {
 
     const formatSTT = handleNumberWithMaxLength(stt);
 
-    return `${NgayGhiThucTe}.${formatSTT}/${nameLoaiHD}.${nameRoom}`;
+    return `${NgayGhiThucTe}.${formatSTT}/${nameLoaiPL}.${nameRoom}`;
   }
 
-  async createContract(req, res) {
+  async createAppendixContract(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -146,52 +122,46 @@ class ContractController {
       }
       const body = req.body;
       const user = jwt.decode(req.headers.authorization.split(" ")[1]);
-      const SoHopDong = await selfController.generateSoHD(
+      const SoPhuLuc = await selfController.generateSoPL(
         user.id,
         body.NgayGhiThucTe,
-        body.MaLoaiHD
+        body.MaLoaiPL
       );
 
-      const newHD = await HopDong.create({
+      const newPL = await PhuLuc.create({
+        HopDongID: body.HopDongID,
         TrangThai: STATUS_DOCUMENT.approve,
-        SoHopDong,
+        SoPhuLuc,
         NgayGhiThucTe: body.NgayGhiThucTe,
-        MaLoaiHD: body.MaLoaiHD,
-        GiaTriTruocVAT: body.GiaTriTruocVAT,
-        VAT: body.VAT,
-        ThoiGianHieuLuc: body.ThoiGianHieuLuc,
+        MaLoaiPL: body.MaLoaiPL,
         TongGiaTri: body.TongGiaTri,
-        SoLuu: null,
         SoBan: body.SoBan,
-        Noidung: body.Noidung,
         MaNguoiNhap: user.id,
-        MaThanhVienBGD: body.MaThanhVienBGD,
-        MaKhachHang: body.MaKhachHang,
         LinkDrive: body.LinkDrive,
         created_at: new Date(),
         update_at: new Date(),
       });
 
-      const { id } = newHD.dataValues;
+      const { id } = newPL.dataValues;
 
       await NhiemVuHD.create({
-        HopDongID: id,
+        HopDongID: null,
         ThoiGianHoanThanh: moment().format("HH:mm"),
         MaLoaiBC: 1,
         TrangThai: STATUS_DOCUMENT.approve,
-        PhuLucID: null,
+        PhuLucID: id,
         created_at: new Date(),
         update_at: new Date(),
       });
 
-      const [listThanhVienBGD, listLoaiHD] = await Promise.all([
-        selfController.getListThanhVienBGD(),
-        selfController.getListLoaiHD(),
+      const [listThanhVienBGD, listLoaiPL] = await Promise.all([
+        contractController.getListThanhVienBGD(),
+        selfController.getListLoaiPL(),
       ]);
 
       return res
         .status(STATUS_RESPONSE.OK)
-        .json(apiResponseCommon({ listThanhVienBGD, listLoaiHD }));
+        .json(apiResponseCommon({ listThanhVienBGD, listLoaiPL }));
     } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
@@ -199,7 +169,7 @@ class ContractController {
     }
   }
 
-  async updateContract(req, res) {
+  async updateAppendixContract(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -208,7 +178,7 @@ class ContractController {
           .json(apiResponseCommon(null, errors.array()[0].msg));
       }
       const { id, ...dataUpdate } = req.body;
-      await HopDong.update(
+      await PhuLuc.update(
         {
           ...dataUpdate,
           update_at: new Date(),
@@ -219,22 +189,22 @@ class ContractController {
           },
         }
       );
-      const dataHD = await HopDong.findOne({
+      const dataPL = await PhuLuc.findOne({
         where: {
           id,
         },
       });
 
-      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiHD } = dataHD.dataValues;
-      const SoHopDong = await selfController.generateSoHD(
+      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiPL } = dataPL.dataValues;
+      const SoPhuLuc = await selfController.generateSoPL(
         MaNguoiNhap,
         NgayGhiThucTe,
-        MaLoaiHD
+        MaLoaiPL
       );
-      dataHD.SoHopDong = SoHopDong;
-      await dataHD.save();
+      dataPL.SoPhuLuc = SoPhuLuc;
+      await dataPL.save();
 
-      return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(dataHD));
+      return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(dataPL));
     } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
@@ -243,4 +213,4 @@ class ContractController {
   }
 }
 
-module.exports = new ContractController();
+module.exports = new AppendixContractController();

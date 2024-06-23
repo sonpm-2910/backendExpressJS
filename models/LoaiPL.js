@@ -1,24 +1,27 @@
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-
-  const LoaiPL = sequelize.define('LoaiPL', {
+const LoaiPL = sequelize.define(
+  "LoaiPL",
+  {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
     name: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     created_at: {
-      type: DataTypes.DATE
+      type: DataTypes.DATE,
     },
     update_at: {
-      type: DataTypes.DATE
-    }
-  }, {
-    tableName: 'LoaiPL',
-    timestamps: false
-  });
-  module.exports = LoaiPL;
+      type: DataTypes.DATE,
+    },
+  },
+  {
+    tableName: "LoaiPL",
+    timestamps: false,
+  }
+);
+module.exports = LoaiPL;
