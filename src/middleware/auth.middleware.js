@@ -19,7 +19,7 @@ module.exports = (req, res, next, roles) => {
     next();
   } catch (error) {
     if (error?.name === "TokenExpiredError") {
-      res
+      return res
         .status(STATUS_RESPONSE.TOKEN_EXPIRED)
         .json(apiResponseCommon(null, "Hết hạn token"));
     }

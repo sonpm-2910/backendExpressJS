@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const User = require("../../models/User");
+const jwt = require("jsonwebtoken");
 const {
   STATUS_RESPONSE,
   apiResponseCommon,
@@ -11,6 +12,9 @@ const {
   generateAccessToken,
   generateRefreshToken,
 } = require("../services/auth/auth.service");
+const dotenv = require("dotenv");
+dotenv.config();
+
 let selfController;
 
 class AuthController {
@@ -147,6 +151,69 @@ class AuthController {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));
+    }
+  }
+
+  async refreshAccessToken(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(STATUS_RESPONSE.BAD_REQUEST)
+          .json(apiResponseCommon(null, errors.array()[0].msg));
+      }
+      const access_token_old = req.body.access_token;
+      const user = jwt.decode(access_token_old);
+      const dataUser = await User.findOne({
+        where: {
+          username: user.username,
+        },
+        raw: true,
+        nest: true,
+      });
+
+      if (!dataUser.refresh_token) {
+        return res
+          .status(STATUS_RESPONSE.UNAUTHORIZED)
+          .json(apiResponseCommon(null, "Unauthorized"));
+      }
+
+      jwt.verify(dataUser.refresh_token, process.env.TOKEN_SECRET);
+
+      const access_token = generateAccessToken({
+        id: dataUser.id,
+        username: dataUser.username,
+        role_id: dataUser.role_id,
+      });
+
+      await User.update(
+        {
+          access_token,
+        },
+        {
+          where: {
+            username: dataUser.username,
+          },
+        }
+      );
+
+      const response = {
+        access_token,
+        dataUser,
+      };
+
+      res
+        .status(STATUS_RESPONSE.OK)
+        .json(apiResponseCommon(response, "refresh token thành công"));
+    } catch (error) {
+      if (error?.name === "TokenExpiredError") {
+        return res
+          .status(STATUS_RESPONSE.TOKEN_EXPIRED)
+          .json(apiResponseCommon(null, "Hết hạn refresh token"));
+      }
+      return res
+        .status(STATUS_RESPONSE.UNAUTHORIZED)
+        .json(apiResponseCommon(null, "Unauthorized"));
     }
   }
 }
