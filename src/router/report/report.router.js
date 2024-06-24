@@ -5,6 +5,9 @@ const { roles } = require("../../services/roles");
 const {
   validateCreateReport,
 } = require("../../middleware/validates/report/CreateReport.validate");
+const {
+  validateUpdateReport,
+} = require("../../middleware/validates/report/UpdateReport.validate");
 const reportRouters = express.Router();
 
 reportRouters.post(
@@ -14,6 +17,15 @@ reportRouters.post(
   },
   validateCreateReport(),
   reportController.create
+);
+
+reportRouters.put(
+  "/update",
+  (req, res, next) => {
+    return authMiddleware(req, res, next, [roles.isAdmin, roles.isPhongCM]);
+  },
+  validateUpdateReport(),
+  reportController.update
 );
 
 module.exports = { reportRouters };

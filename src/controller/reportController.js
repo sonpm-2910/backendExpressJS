@@ -25,7 +25,6 @@ class ReportController {
   }
 
   groupArrObjectAndSort(array) {
-    console.log("array", array);
     const tempObj = array.reduce((acc, curr) => {
       if (curr.MaKTV in acc) {
         acc[curr.MaKTV].NamKy.push(curr.NamKy);
@@ -175,7 +174,7 @@ class ReportController {
     }
   }
 
-  async generateSoBaoCao(body, user) {
+  async generateSoBaoCao(NgayGhiThucTe, MaLoaiBC, MaNguoiNhap) {
     const listOldBaoCao = await BaoCao.findAll({
       include: [
         {
@@ -193,9 +192,9 @@ class ReportController {
         },
       ],
       where: {
-        NgayGhiThucTe: body.NgayGhiThucTe,
-        MaNguoiNhap: user.id,
-        MaLoaiBC: body.MaLoaiBC,
+        NgayGhiThucTe,
+        MaNguoiNhap,
+        MaLoaiBC,
       },
       order: [["update_at", "DESC"]],
       limit: 1,
@@ -215,7 +214,7 @@ class ReportController {
       nameLoaiBaoCao = (
         await LoaiBC.findOne({
           where: {
-            id: body.MaLoaiBC,
+            id: MaLoaiBC,
           },
           raw: true,
           nest: true,
@@ -229,7 +228,7 @@ class ReportController {
             },
           ],
           where: {
-            id: user.id,
+            id: MaNguoiNhap,
           },
           raw: true,
           nest: true,
@@ -239,7 +238,7 @@ class ReportController {
 
     const formatSTT = handleNumberWithMaxLength(stt);
 
-    return `${body.NgayGhiThucTe}.${formatSTT}/${nameLoaiBaoCao}.${nameRoom}`;
+    return `${NgayGhiThucTe}.${formatSTT}/${nameLoaiBaoCao}.${nameRoom}`;
   }
 
   async create(req, res) {
@@ -252,7 +251,11 @@ class ReportController {
       }
       const body = req.body;
       const user = jwt.decode(req.headers.authorization.split(" ")[1]);
-      const SoBaoCao = await selfController.generateSoBaoCao(body, user);
+      const SoBaoCao = await selfController.generateSoBaoCao(
+        body.NgayGhiThucTe,
+        body.MaLoaiBC,
+        user.id
+      );
 
       if (!body?.HopDongID && !body?.PhuLucID) {
         return res
@@ -318,6 +321,69 @@ class ReportController {
           listThanhVienBGD,
         })
       );
+    } catch (error) {
+      res
+        .status(STATUS_RESPONSE.BAD_REQUEST)
+        .json(apiResponseCommon(null, JSON.stringify(error)));
+    }
+  }
+
+  async update(req, res) {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res
+          .status(STATUS_RESPONSE.BAD_REQUEST)
+          .json(apiResponseCommon(null, errors.array()[0].msg));
+      }
+      const { id, DanhSachKTV, ...dataUpdate } = req.body;
+      await BaoCao.update(
+        {
+          ...dataUpdate,
+          update_at: new Date(),
+        },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+      const dataBC = await BaoCao.findOne({
+        where: {
+          id,
+        },
+      });
+
+      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiBC, ThoiGianHieuLuc } =
+        dataBC.dataValues;
+
+      const SoBaoCao = await selfController.generateSoBaoCao(
+        NgayGhiThucTe,
+        MaLoaiBC,
+        MaNguoiNhap
+      );
+
+      dataBC.SoBaoCao = SoBaoCao;
+      await dataBC.save();
+
+      if (DanhSachKTV && DanhSachKTV.length > 0) {
+        const NamKy = moment(ThoiGianHieuLuc).format("YYYY");
+        await KTV_BaoCao.destroy({
+          where: {
+            BaoCaoID: id,
+          },
+        });
+        for (let index = 0; index < DanhSachKTV.length; index++) {
+          const MaKTV = DanhSachKTV[index];
+          await KTV_BaoCao.create({
+            MaKTV,
+            BaoCaoID: id,
+            NamKy,
+          });
+        }
+      }
+
+      return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(dataBC));
     } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
