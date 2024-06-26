@@ -129,7 +129,7 @@ class AuthController {
 
       if (isExistAccount) {
         return res
-          .status(STATUS_RESPONSE.OK)
+          .status(STATUS_RESPONSE.BAD_REQUEST)
           .json(apiResponseCommon(null, "Tài khoản đã tồn tại"));
       }
 
@@ -199,7 +199,6 @@ class AuthController {
 
       const response = {
         access_token,
-        dataUser,
       };
 
       res
