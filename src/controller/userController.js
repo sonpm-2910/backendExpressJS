@@ -5,23 +5,28 @@ const {
   paginationQuery,
   pagingResult,
   paginateDefault,
+  saltOrRounds,
 } = require("../services/constant");
+const User = require("../../models/User");
+const { roles } = require("../services/roles");
+const bcrypt = require("bcrypt");
+const Role = require("../../models/Role");
 const NhanVien = require("../../models/NhanVien");
-const DonVi = require("../../models/DonVi");
 
 let selfController;
 
-class staffController {
+class userController {
   constructor() {
     selfController = this;
   }
 
-  async getListStaff(req, res) {
+  async getListUser(req, res) {
     try {
       const { page = paginateDefault.page, limit = paginateDefault.limit } =
         req.query;
-      const staffs = await NhanVien.findAndCountAll({
-        include: [DonVi],
+      const staffs = await User.findAndCountAll({
+        include: [Role, NhanVien],
+        attributes: { exclude: ["password"] },
         raw: true,
         nest: true,
         ...paginationQuery(page, limit),
@@ -36,7 +41,7 @@ class staffController {
     }
   }
 
-  async createStaff(req, res) {
+  async createUser(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -45,15 +50,35 @@ class staffController {
           .json(apiResponseCommon(null, errors.array()[0].msg));
       }
       const body = req.body;
-      const newStaff = await NhanVien.create({
-        DonViID: body.DonViID,
-        ChucVu: body.ChucVu,
-        HoTen: body.HoTen,
-        LaKTV: body.LaKTV || false,
-        created_at: new Date(),
-        update_at: new Date(),
+
+      const isExistAccount = await User.findOne({
+        where: {
+          username: body.username,
+        },
       });
-      res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(newStaff));
+
+      if (isExistAccount) {
+        return res
+          .status(STATUS_RESPONSE.BAD_REQUEST)
+          .json(apiResponseCommon(null, "User đã tồn tại"));
+      }
+
+      const hashPassword = await bcrypt.hash(body.password, saltOrRounds);
+
+      const result = await User.create({
+        username: body.username,
+        password: hashPassword,
+        role_id: body.role_id,
+        NhanVienID: body.NhanVienID || null,
+        access_token: "",
+        refresh_token: "",
+      });
+
+      const { password, ...dataUser } = result.dataValues;
+
+      res
+        .status(STATUS_RESPONSE.OK)
+        .json(apiResponseCommon(dataUser, "Tạo user thành công"));
     } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
@@ -61,7 +86,7 @@ class staffController {
     }
   }
 
-  async updateStaff(req, res) {
+  async updateUser(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -70,7 +95,13 @@ class staffController {
           .json(apiResponseCommon(null, errors.array()[0].msg));
       }
       const { id, ...dataUpdate } = req.body;
-      await NhanVien.update(
+      if (dataUpdate.password) {
+        dataUpdate.password = await bcrypt.hash(
+          dataUpdate.password,
+          saltOrRounds
+        );
+      }
+      await User.update(
         {
           ...dataUpdate,
           update_at: new Date(),
@@ -96,10 +127,11 @@ class staffController {
     }
   }
 
-  async getDetailStaff(req, res) {
+  async getDetailUser(req, res) {
     try {
-      const data = await NhanVien.findOne({
-        include: [DonVi],
+      const data = await User.findOne({
+        include: [Role, NhanVien],
+        attributes: { exclude: ["password"] },
         where: {
           id: req.params.id,
         },
@@ -107,7 +139,7 @@ class staffController {
       if (!data) {
         return res
           .status(STATUS_RESPONSE.BAD_REQUEST)
-          .json(apiResponseCommon(null, "Không tìm thấy nhân viên"));
+          .json(apiResponseCommon(null, "Không tìm thấy user"));
       }
       return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(data));
     } catch (error) {
@@ -117,9 +149,9 @@ class staffController {
     }
   }
 
-  async deleteStaff(req, res) {
+  async deleteUser(req, res) {
     try {
-      const data = await NhanVien.destroy({
+      const data = await User.destroy({
         where: {
           id: req.params.id,
         },
@@ -127,11 +159,11 @@ class staffController {
       if (!data) {
         return res
           .status(STATUS_RESPONSE.BAD_REQUEST)
-          .json(apiResponseCommon(null, "Xóa nhân viên không thành công"));
+          .json(apiResponseCommon(null, "Xóa user không thành công"));
       }
       return res
         .status(STATUS_RESPONSE.OK)
-        .json(apiResponseCommon(true, "Xóa nhân viên thành công"));
+        .json(apiResponseCommon(true, "Xóa user thành công"));
     } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
@@ -140,4 +172,4 @@ class staffController {
   }
 }
 
-module.exports = new staffController();
+module.exports = new userController();
