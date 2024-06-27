@@ -7,6 +7,7 @@ const {
   paginateDefault,
 } = require("../services/constant");
 const DonVi = require("../../models/DonVi");
+const { Op } = require("sequelize");
 
 let selfController;
 
@@ -17,17 +18,26 @@ class departmentController {
 
   async getListDepartment(req, res) {
     try {
-      const { page = paginateDefault.page, limit = paginateDefault.limit } =
-        req.query;
+      const {
+        page = paginateDefault.page,
+        limit = paginateDefault.limit,
+        name,
+      } = req.query;
       const staffs = await DonVi.findAndCountAll({
         raw: true,
         nest: true,
+        where: {
+          name: {
+            [Op.like]: `%${name || ""}%`,
+          },
+        },
         ...paginationQuery(page, limit),
       });
       res
         .status(STATUS_RESPONSE.OK)
         .json(apiResponseCommon(pagingResult(staffs, page, limit)));
     } catch (error) {
+      console.log("error", error);
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));

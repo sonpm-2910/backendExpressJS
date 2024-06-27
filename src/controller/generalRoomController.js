@@ -54,8 +54,19 @@ class generalRoomController {
 
   async getList(req, res) {
     try {
-      const { page = paginateDefault.page, limit = paginateDefault.limit } =
-        req.query;
+      const {
+        page = paginateDefault.page,
+        limit = paginateDefault.limit,
+        MaKhachHang,
+        SoHopDong,
+      } = req.query;
+      const querySearch = {
+        SoHopDong: {
+          [Op.like]: `%${SoHopDong || ""}%`,
+        },
+        MaKhachHang: MaKhachHang || true,
+      };
+
       const HopDongs = await HopDong.findAndCountAll({
         include: [
           {
@@ -64,6 +75,7 @@ class generalRoomController {
           },
         ],
         attributes: ["id", "SoHopDong"],
+        where: querySearch,
         raw: true,
         nest: true,
         ...paginationQuery(page, limit),

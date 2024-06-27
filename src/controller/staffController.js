@@ -8,6 +8,7 @@ const {
 } = require("../services/constant");
 const NhanVien = require("../../models/NhanVien");
 const DonVi = require("../../models/DonVi");
+const { Op } = require("sequelize");
 
 let selfController;
 
@@ -18,18 +19,27 @@ class staffController {
 
   async getListStaff(req, res) {
     try {
-      const { page = paginateDefault.page, limit = paginateDefault.limit } =
-        req.query;
+      const {
+        page = paginateDefault.page,
+        limit = paginateDefault.limit,
+        name,
+      } = req.query;
       const staffs = await NhanVien.findAndCountAll({
         include: [DonVi],
         raw: true,
         nest: true,
+        where: {
+          HoTen: {
+            [Op.like]: `%${name || ""}%`,
+          },
+        },
         ...paginationQuery(page, limit),
       });
       res
         .status(STATUS_RESPONSE.OK)
         .json(apiResponseCommon(pagingResult(staffs, page, limit)));
     } catch (error) {
+      console.log("error", error);
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));

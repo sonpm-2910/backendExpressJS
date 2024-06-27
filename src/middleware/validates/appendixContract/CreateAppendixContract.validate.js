@@ -15,6 +15,13 @@ const validateCreateAppendixContract = () => {
     check("SoBan", messagesErrorCommon("Số bản").mustBeNumber)
       .optional()
       .isNumeric(),
+    check("listNhiemVu", messagesErrorCommon("listNhiemVu").notEmpty)
+      .not()
+      .isEmpty(),
+    check(
+      "listNhiemVu",
+      messagesErrorCommon("listNhiemVu").mustBeArray
+    ).isArray(),
   ];
 };
 
