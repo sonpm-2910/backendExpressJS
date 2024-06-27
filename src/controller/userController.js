@@ -12,6 +12,7 @@ const { roles } = require("../services/roles");
 const bcrypt = require("bcrypt");
 const Role = require("../../models/Role");
 const NhanVien = require("../../models/NhanVien");
+const { Op } = require("sequelize");
 
 let selfController;
 
@@ -22,13 +23,21 @@ class userController {
 
   async getListUser(req, res) {
     try {
-      const { page = paginateDefault.page, limit = paginateDefault.limit } =
-        req.query;
+      const {
+        page = paginateDefault.page,
+        limit = paginateDefault.limit,
+        username,
+      } = req.query;
       const staffs = await User.findAndCountAll({
         include: [Role, NhanVien],
         attributes: { exclude: ["password"] },
         raw: true,
         nest: true,
+        where: {
+          username: {
+            [Op.like]: `%${username || ""}%`,
+          },
+        },
         ...paginationQuery(page, limit),
       });
       res
