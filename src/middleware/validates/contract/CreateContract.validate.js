@@ -44,6 +44,13 @@ const validateCreateContract = () => {
     check("MaKhachHang", messagesErrorCommon("Mã khách hàng").notEmpty)
       .not()
       .isEmpty(),
+    check("listNhiemVu", messagesErrorCommon("listNhiemVu").notEmpty)
+      .not()
+      .isEmpty(),
+    check(
+      "listNhiemVu",
+      messagesErrorCommon("listNhiemVu").mustBeArray
+    ).isArray(),
   ];
 };
 

@@ -147,7 +147,7 @@ class ContractController {
       const body = req.body;
       const user = jwt.decode(req.headers.authorization.split(" ")[1]);
       const SoHopDong = await selfController.generateSoHD(
-        user.id,
+        user.NhanVienID,
         body.NgayGhiThucTe,
         body.MaLoaiHD
       );
@@ -164,7 +164,7 @@ class ContractController {
         SoLuu: null,
         SoBan: body.SoBan,
         Noidung: body.Noidung,
-        MaNguoiNhap: user.id,
+        MaNguoiNhap: user.NhanVienID,
         MaThanhVienBGD: body.MaThanhVienBGD,
         MaKhachHang: body.MaKhachHang,
         LinkDrive: body.LinkDrive,
@@ -174,15 +174,17 @@ class ContractController {
 
       const { id } = newHD.dataValues;
 
-      await NhiemVuHD.create({
-        HopDongID: id,
-        ThoiGianHoanThanh: moment().format("HH:mm"),
-        MaLoaiBC: 1,
-        TrangThai: STATUS_DOCUMENT.approve,
-        PhuLucID: null,
-        created_at: new Date(),
-        update_at: new Date(),
-      });
+      for (let index = 0; index < body.listNhiemVu.length; index++) {
+        await NhiemVuHD.create({
+          HopDongID: id,
+          ThoiGianHoanThanh: body.listNhiemVu[index].ThoiGianHoanThanh,
+          MaLoaiBC: body.listNhiemVu[index].MaLoaiBaoCao,
+          TrangThai: STATUS_DOCUMENT.approve,
+          PhuLucID: null,
+          created_at: new Date(),
+          update_at: new Date(),
+        });
+      }
 
       const [listThanhVienBGD, listLoaiHD] = await Promise.all([
         selfController.getListThanhVienBGD(),

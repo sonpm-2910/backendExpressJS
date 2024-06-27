@@ -123,7 +123,7 @@ class AppendixContractController {
       const body = req.body;
       const user = jwt.decode(req.headers.authorization.split(" ")[1]);
       const SoPhuLuc = await selfController.generateSoPL(
-        user.id,
+        user.NhanVienID,
         body.NgayGhiThucTe,
         body.MaLoaiPL
       );
@@ -136,23 +136,24 @@ class AppendixContractController {
         MaLoaiPL: body.MaLoaiPL,
         TongGiaTri: body.TongGiaTri,
         SoBan: body.SoBan,
-        MaNguoiNhap: user.id,
+        MaNguoiNhap: user.NhanVienID,
         LinkDrive: body.LinkDrive,
         created_at: new Date(),
         update_at: new Date(),
       });
 
       const { id } = newPL.dataValues;
-
-      await NhiemVuHD.create({
-        HopDongID: null,
-        ThoiGianHoanThanh: moment().format("HH:mm"),
-        MaLoaiBC: 1,
-        TrangThai: STATUS_DOCUMENT.approve,
-        PhuLucID: id,
-        created_at: new Date(),
-        update_at: new Date(),
-      });
+      for (let index = 0; index < body.listNhiemVu.length; index++) {
+        await NhiemVuHD.create({
+          HopDongID: null,
+          ThoiGianHoanThanh: body.listNhiemVu[index].ThoiGianHoanThanh,
+          MaLoaiBC: body.listNhiemVu[index].MaLoaiBaoCao,
+          TrangThai: STATUS_DOCUMENT.approve,
+          PhuLucID: id,
+          created_at: new Date(),
+          update_at: new Date(),
+        });
+      }
 
       const [listThanhVienBGD, listLoaiPL] = await Promise.all([
         contractController.getListThanhVienBGD(),
@@ -163,6 +164,7 @@ class AppendixContractController {
         .status(STATUS_RESPONSE.OK)
         .json(apiResponseCommon({ listThanhVienBGD, listLoaiPL }));
     } catch (error) {
+      console.log("error", error);
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));

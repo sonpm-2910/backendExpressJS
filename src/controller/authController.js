@@ -75,11 +75,13 @@ class AuthController {
       const { password, ...dataUser } = resultLogin.result;
       const access_token = generateAccessToken({
         id: dataUser.id,
+        NhanVienID: dataUser.NhanVienID,
         username: dataUser.username,
         role_id: dataUser.role_id,
       });
       const refresh_token = generateRefreshToken({
         id: dataUser.id,
+        NhanVienID: dataUser.NhanVienID,
         username: dataUser.username,
         role_id: dataUser.role_id,
       });
@@ -182,6 +184,7 @@ class AuthController {
 
       const access_token = generateAccessToken({
         id: dataUser.id,
+        NhanVienID: dataUser.NhanVienID,
         username: dataUser.username,
         role_id: dataUser.role_id,
       });
