@@ -5,6 +5,7 @@ const {
 } = require("./appendixContract/appendixContract.router");
 const { authRouters } = require("./auth/auth.router");
 const { contractRouters } = require("./contract/contract.router");
+const { customerRouters } = require("./customer/customer.router");
 const { departmentRouters } = require("./department/department.router");
 const { generalRoomRouters } = require("./generalRoom/generalRoom.router");
 const { reportRouters } = require("./report/report.router");
@@ -23,6 +24,7 @@ const routersInit = (app) => {
   app.use("/staff", staffRouters);
   app.use("/department", departmentRouters);
   app.use("/user", userRouters);
+  app.use("/customer", customerRouters);
   app.use("/auth", authRouters);
 
   app.use((req, res, next) => {

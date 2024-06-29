@@ -6,24 +6,26 @@ const {
   pagingResult,
   paginateDefault,
 } = require("../services/constant");
-const DonVi = require("../../models/DonVi");
 const { Op } = require("sequelize");
+const KhachHang = require("../../models/KhachHang");
+const LoaiKH = require("../../models/LoaiKH");
 
 let selfController;
 
-class departmentController {
+class customerController {
   constructor() {
     selfController = this;
   }
 
-  async getListDepartment(req, res) {
+  async getListCustomer(req, res) {
     try {
       const {
         page = paginateDefault.page,
         limit = paginateDefault.limit,
         name,
       } = req.query;
-      const departments = await DonVi.findAndCountAll({
+      const customers = await KhachHang.findAndCountAll({
+        include: [LoaiKH],
         raw: true,
         nest: true,
         where: {
@@ -35,7 +37,7 @@ class departmentController {
       });
       res
         .status(STATUS_RESPONSE.OK)
-        .json(apiResponseCommon(pagingResult(departments, page, limit)));
+        .json(apiResponseCommon(pagingResult(customers, page, limit)));
     } catch (error) {
       console.log("error", error);
       res
@@ -44,7 +46,7 @@ class departmentController {
     }
   }
 
-  async createDepartment(req, res) {
+  async createCustomer(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -53,8 +55,14 @@ class departmentController {
           .json(apiResponseCommon(null, errors.array()[0].msg));
       }
       const body = req.body;
-      const result = await DonVi.create({
+      const result = await KhachHang.create({
         name: body.name,
+        MST: body.MST,
+        SDT: body.SDT,
+        email: body.email,
+        DiaChi: body.DiaChi,
+        TenNguoiDaiDien: body.TenNguoiDaiDien,
+        MaLoaiKH: body.MaLoaiKH,
         created_at: new Date(),
         update_at: new Date(),
       });
@@ -66,7 +74,7 @@ class departmentController {
     }
   }
 
-  async updateDepartment(req, res) {
+  async updateCustomer(req, res) {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -75,7 +83,7 @@ class departmentController {
           .json(apiResponseCommon(null, errors.array()[0].msg));
       }
       const { id, ...dataUpdate } = req.body;
-      await DonVi.update(
+      await KhachHang.update(
         {
           ...dataUpdate,
           update_at: new Date(),
@@ -101,9 +109,10 @@ class departmentController {
     }
   }
 
-  async getDetailDepartment(req, res) {
+  async getDetailCustomer(req, res) {
     try {
-      const data = await DonVi.findOne({
+      const data = await KhachHang.findOne({
+        include: [LoaiKH],
         where: {
           id: req.params.id,
         },
@@ -111,7 +120,7 @@ class departmentController {
       if (!data) {
         return res
           .status(STATUS_RESPONSE.BAD_REQUEST)
-          .json(apiResponseCommon(null, "Không tìm thấy phòng ban"));
+          .json(apiResponseCommon(null, "Không tìm thấy khách hàng"));
       }
       return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(data));
     } catch (error) {
@@ -121,9 +130,9 @@ class departmentController {
     }
   }
 
-  async deleteDepartment(req, res) {
+  async deleteCustomer(req, res) {
     try {
-      const data = await DonVi.destroy({
+      const data = await KhachHang.destroy({
         where: {
           id: req.params.id,
         },
@@ -131,11 +140,11 @@ class departmentController {
       if (!data) {
         return res
           .status(STATUS_RESPONSE.BAD_REQUEST)
-          .json(apiResponseCommon(null, "Xóa phòng ban không thành công"));
+          .json(apiResponseCommon(null, "Xóa khách hàng không thành công"));
       }
       return res
         .status(STATUS_RESPONSE.OK)
-        .json(apiResponseCommon(true, "Xóa phòng ban thành công"));
+        .json(apiResponseCommon(true, "Xóa khách hàng thành công"));
     } catch (error) {
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
@@ -144,4 +153,4 @@ class departmentController {
   }
 }
 
-module.exports = new departmentController();
+module.exports = new customerController();
