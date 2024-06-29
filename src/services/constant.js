@@ -48,6 +48,8 @@ const messagesErrorCommon = (field) => {
 
 const saltOrRounds = 10;
 
+const regexPhoneNumber = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
+
 const handleNumberWithMaxLength = (num, length = 3) => {
   return Number(num).toString().padStart(length, "0");
 };
@@ -69,4 +71,5 @@ module.exports = {
   handleNumberWithMaxLength,
   saltOrRounds,
   STATUS_DOCUMENT,
+  regexPhoneNumber,
 };
