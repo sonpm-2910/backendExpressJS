@@ -16,6 +16,7 @@ const moment = require("moment");
 const { getIncreasingConsecutive } = require("../services/helper");
 const Phat = require("../../models/Phat");
 const { Op } = require("sequelize");
+const historyController = require("./historyController");
 
 let selfController;
 
@@ -254,8 +255,16 @@ class ReportController {
       const SoBaoCao = await selfController.generateSoBaoCao(
         body.NgayGhiThucTe,
         body.MaLoaiBC,
-        user.id
+        user.NhanVienID
       );
+
+      const bodyHistory = {
+        SoVanBan: SoBaoCao,
+        NgayThayDoi: new Date(),
+        LinkCu: body.LinkDrive,
+        NguoiSua: user.NhanVienID,
+        NoiDungSua: "Tạo mới báo cáo",
+      };
 
       if (!body?.HopDongID && !body?.PhuLucID) {
         return res
@@ -263,25 +272,28 @@ class ReportController {
           .json(apiResponseCommon(null, "Cần có mã hợp đồng hoặc mã phụ lục"));
       }
 
-      const result = await BaoCao.create({
-        HopDongID: body?.HopDongID || null,
-        PhuLucID: body?.PhuLucID || null,
-        TrangThai: body.TrangThai,
-        SoBaoCao,
-        NgayGhiThucTe: body.NgayGhiThucTe,
-        ThoiGianHieuLuc: body.ThoiGianHieuLuc,
-        MaLoaiBC: body.MaLoaiBC,
-        MaKTV: body.MaKTV,
-        MaTruongNhom: body.MaTruongNhom,
-        SoLuu: null,
-        SoBan: body.SoBan,
-        Noidung: body.Noidung,
-        MaNguoiNhap: user.id,
-        MaThanhVienBGD: body.MaThanhVienBGD,
-        LinkDrive: body.LinkDrive,
-        created_at: new Date(),
-        update_at: new Date(),
-      });
+      const [result, resultHistory] = await Promise.all([
+        BaoCao.create({
+          HopDongID: body?.HopDongID || null,
+          PhuLucID: body?.PhuLucID || null,
+          TrangThai: body.TrangThai,
+          SoBaoCao,
+          NgayGhiThucTe: body.NgayGhiThucTe,
+          ThoiGianHieuLuc: body.ThoiGianHieuLuc,
+          MaLoaiBC: body.MaLoaiBC,
+          MaKTV: body.MaKTV,
+          MaTruongNhom: body.MaTruongNhom,
+          SoLuu: null,
+          SoBan: body.SoBan,
+          Noidung: body.Noidung,
+          MaNguoiNhap: user.NhanVienID,
+          MaThanhVienBGD: body.MaThanhVienBGD,
+          LinkDrive: body.LinkDrive,
+          created_at: new Date(),
+          update_at: new Date(),
+        }),
+        historyController.createHistory(bodyHistory),
+      ]);
 
       const loaiBaoCaoData = await LoaiBC.findOne({
         where: {
@@ -322,6 +334,7 @@ class ReportController {
         })
       );
     } catch (error) {
+      console.log("error", error);
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));
@@ -354,8 +367,13 @@ class ReportController {
         },
       });
 
-      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiBC, ThoiGianHieuLuc } =
-        dataBC.dataValues;
+      const {
+        MaNguoiNhap,
+        NgayGhiThucTe,
+        MaLoaiBC,
+        ThoiGianHieuLuc,
+        LinkDrive,
+      } = dataBC.dataValues;
 
       const SoBaoCao = await selfController.generateSoBaoCao(
         NgayGhiThucTe,
@@ -364,7 +382,19 @@ class ReportController {
       );
 
       dataBC.SoBaoCao = SoBaoCao;
-      await dataBC.save();
+
+      const bodyHistory = {
+        SoVanBan: SoBaoCao,
+        NgayThayDoi: new Date(),
+        LinkCu: LinkDrive,
+        NguoiSua: MaNguoiNhap,
+        NoiDungSua: "Sửa báo cáo",
+      };
+
+      await Promise.all([
+        dataBC.save(),
+        historyController.createHistory(bodyHistory),
+      ]);
 
       if (DanhSachKTV && DanhSachKTV.length > 0) {
         const NamKy = moment(ThoiGianHieuLuc).format("YYYY");
