@@ -11,7 +11,7 @@ const NhanVien = require("../../models/NhanVien");
 const DonVi = require("../../models/DonVi");
 const LoaiHD = require("../../models/LoaiHD");
 const NhiemVuHD = require("../../models/NhiemVuHD");
-const moment = require("moment");
+const historyController = require("./historyController");
 
 let selfController;
 
@@ -152,25 +152,36 @@ class ContractController {
         body.MaLoaiHD
       );
 
-      const newHD = await HopDong.create({
-        TrangThai: STATUS_DOCUMENT.approve,
-        SoHopDong,
-        NgayGhiThucTe: body.NgayGhiThucTe,
-        MaLoaiHD: body.MaLoaiHD,
-        GiaTriTruocVAT: body.GiaTriTruocVAT,
-        VAT: body.VAT,
-        ThoiGianHieuLuc: body.ThoiGianHieuLuc,
-        TongGiaTri: body.TongGiaTri,
-        SoLuu: null,
-        SoBan: body.SoBan,
-        Noidung: body.Noidung,
-        MaNguoiNhap: user.NhanVienID,
-        MaThanhVienBGD: body.MaThanhVienBGD,
-        MaKhachHang: body.MaKhachHang,
-        LinkDrive: body.LinkDrive,
-        created_at: new Date(),
-        update_at: new Date(),
-      });
+      const bodyHistory = {
+        SoVanBan: SoHopDong,
+        NgayThayDoi: new Date(),
+        LinkCu: body.LinkDrive,
+        NguoiSua: user.NhanVienID,
+        NoiDungSua: "Tạo mới hợp đồng",
+      };
+
+      const [newHD, resultHistory] = await Promise.all([
+        HopDong.create({
+          TrangThai: STATUS_DOCUMENT.approve,
+          SoHopDong,
+          NgayGhiThucTe: body.NgayGhiThucTe,
+          MaLoaiHD: body.MaLoaiHD,
+          GiaTriTruocVAT: body.GiaTriTruocVAT,
+          VAT: body.VAT,
+          ThoiGianHieuLuc: body.ThoiGianHieuLuc,
+          TongGiaTri: body.TongGiaTri,
+          SoLuu: null,
+          SoBan: body.SoBan,
+          Noidung: body.Noidung,
+          MaNguoiNhap: user.NhanVienID,
+          MaThanhVienBGD: body.MaThanhVienBGD,
+          MaKhachHang: body.MaKhachHang,
+          LinkDrive: body.LinkDrive,
+          created_at: new Date(),
+          update_at: new Date(),
+        }),
+        historyController.createHistory(bodyHistory),
+      ]);
 
       const { id } = newHD.dataValues;
 
@@ -227,14 +238,26 @@ class ContractController {
         },
       });
 
-      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiHD } = dataHD.dataValues;
+      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiHD, LinkDrive } =
+        dataHD.dataValues;
       const SoHopDong = await selfController.generateSoHD(
         MaNguoiNhap,
         NgayGhiThucTe,
         MaLoaiHD
       );
       dataHD.SoHopDong = SoHopDong;
-      await dataHD.save();
+
+      const bodyHistory = {
+        SoVanBan: SoHopDong,
+        NgayThayDoi: new Date(),
+        LinkCu: LinkDrive,
+        NguoiSua: MaNguoiNhap,
+        NoiDungSua: "Sửa hợp đồng",
+      };
+      await Promise.all([
+        dataHD.save(),
+        historyController.createHistory(bodyHistory),
+      ]);
 
       return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(dataHD));
     } catch (error) {

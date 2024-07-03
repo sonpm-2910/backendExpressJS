@@ -12,7 +12,7 @@ const DonVi = require("../../models/DonVi");
 const jwt = require("jsonwebtoken");
 const NhiemVuHD = require("../../models/NhiemVuHD");
 const contractController = require("./contractController");
-const moment = require("moment");
+const historyController = require("./historyController");
 let selfController;
 
 class AppendixContractController {
@@ -128,19 +128,30 @@ class AppendixContractController {
         body.MaLoaiPL
       );
 
-      const newPL = await PhuLuc.create({
-        HopDongID: body.HopDongID,
-        TrangThai: STATUS_DOCUMENT.approve,
-        SoPhuLuc,
-        NgayGhiThucTe: body.NgayGhiThucTe,
-        MaLoaiPL: body.MaLoaiPL,
-        TongGiaTri: body.TongGiaTri,
-        SoBan: body.SoBan,
-        MaNguoiNhap: user.NhanVienID,
-        LinkDrive: body.LinkDrive,
-        created_at: new Date(),
-        update_at: new Date(),
-      });
+      const bodyHistory = {
+        SoVanBan: SoPhuLuc,
+        NgayThayDoi: new Date(),
+        LinkCu: body.LinkDrive,
+        NguoiSua: user.NhanVienID,
+        NoiDungSua: "Tạo mới phụ lục",
+      };
+
+      const [newPL, resultHistory] = await Promise.all([
+        PhuLuc.create({
+          HopDongID: body.HopDongID,
+          TrangThai: STATUS_DOCUMENT.approve,
+          SoPhuLuc,
+          NgayGhiThucTe: body.NgayGhiThucTe,
+          MaLoaiPL: body.MaLoaiPL,
+          TongGiaTri: body.TongGiaTri,
+          SoBan: body.SoBan,
+          MaNguoiNhap: user.NhanVienID,
+          LinkDrive: body.LinkDrive,
+          created_at: new Date(),
+          update_at: new Date(),
+        }),
+        historyController.createHistory(bodyHistory),
+      ]);
 
       const { id } = newPL.dataValues;
       for (let index = 0; index < body.listNhiemVu.length; index++) {
@@ -164,7 +175,6 @@ class AppendixContractController {
         .status(STATUS_RESPONSE.OK)
         .json(apiResponseCommon({ listThanhVienBGD, listLoaiPL }));
     } catch (error) {
-      console.log("error", error);
       res
         .status(STATUS_RESPONSE.BAD_REQUEST)
         .json(apiResponseCommon(null, JSON.stringify(error)));
@@ -180,6 +190,7 @@ class AppendixContractController {
           .json(apiResponseCommon(null, errors.array()[0].msg));
       }
       const { id, ...dataUpdate } = req.body;
+
       await PhuLuc.update(
         {
           ...dataUpdate,
@@ -197,14 +208,27 @@ class AppendixContractController {
         },
       });
 
-      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiPL } = dataPL.dataValues;
+      const { MaNguoiNhap, NgayGhiThucTe, MaLoaiPL, LinkDrive } =
+        dataPL.dataValues;
       const SoPhuLuc = await selfController.generateSoPL(
         MaNguoiNhap,
         NgayGhiThucTe,
         MaLoaiPL
       );
       dataPL.SoPhuLuc = SoPhuLuc;
-      await dataPL.save();
+
+      const bodyHistory = {
+        SoVanBan: SoPhuLuc,
+        NgayThayDoi: new Date(),
+        LinkCu: LinkDrive,
+        NguoiSua: MaNguoiNhap,
+        NoiDungSua: "Sửa phụ lục",
+      };
+
+      await Promise.all([
+        dataPL.save(),
+        historyController.createHistory(bodyHistory),
+      ]);
 
       return res.status(STATUS_RESPONSE.OK).json(apiResponseCommon(dataPL));
     } catch (error) {
